@@ -4,12 +4,16 @@ LangChain HVAC Agent for intelligent climate control.
 AI-enhanced HVAC coordinator with LangChain integration.
 """
 
+import os
 from typing import Dict, Any, List, Callable
 from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langchain.tools import Tool
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 import structlog
+
+# Ensure LangSmith telemetry is disabled for privacy
+os.environ.setdefault("LANGCHAIN_TRACING_V2", "false")
 
 from ..home_assistant.client import HomeAssistantClient
 from ..config.settings import HvacOptions

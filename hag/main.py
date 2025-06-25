@@ -7,10 +7,17 @@ rs with Python async/await and enhanced CLI.
 import asyncio
 import sys
 import signal
+import os
 from pathlib import Path
 from typing import Optional
 import structlog
 from dependency_injector.wiring import inject, Provide
+
+# Disable LangSmith telemetry by default for privacy
+os.environ.setdefault("LANGCHAIN_TRACING_V2", "false")
+os.environ.setdefault("LANGCHAIN_ENDPOINT", "")
+os.environ.setdefault("LANGCHAIN_API_KEY", "")
+os.environ.setdefault("LANGSMITH_TRACING", "false")
 
 from .core.container import ApplicationContainer, create_container
 from .core.exceptions import HAGError, ConfigurationError

@@ -131,6 +131,7 @@ class Settings(BaseSettings):
         env_file = ".env"
         env_nested_delimiter = "__"
         case_sensitive = False
+        extra = "allow"  # Allow extra environment variables (e.g. LangSmith telemetry)
         
         @classmethod
         def customise_sources(
