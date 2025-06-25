@@ -1,0 +1,2 @@
+python-statemachine==2.5.0
+structlog==25.4.0

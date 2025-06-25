@@ -1,0 +1,108 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "hag-py"
+version = "0.1.0"
+description = "HAG (Home Assistant aGentic automation) - Python HVAC automation system"
+authors = ["HAG Project <noreply@example.com>"]
+readme = "README.md"
+packages = [{include = "hag"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+langchain = "^0.1.0"
+langchain-core = "^0.1.0"
+langgraph = "^0.0.20"
+langsmith = "^0.0.69"
+python-statemachine = "^2.1.0"
+dependency-injector = "^4.41.0"
+pydantic = "^2.5.0"
+pydantic-settings = "^2.1.0"
+aiohttp = "^3.9.0"
+websockets = "^12.0"
+pyyaml = "^6.0"
+structlog = "^23.2.0"
+python-dotenv = "^1.0.0"
+asyncio-mqtt = "^0.16.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+pytest-asyncio = "^0.23.0"
+pytest-cov = "^4.1.0"
+black = "^23.12.0"
+isort = "^5.13.0"
+flake8 = "^7.0.0"
+mypy = "^1.8.0"
+pre-commit = "^3.6.0"
+
+[tool.poetry.group.optional.dependencies]
+prometheus-client = "^0.19.0"
+
+[tool.poetry.scripts]
+hag = "hag.main:main"
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["hag"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = ["tests"]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests", 
+    "slow: Slow tests",
+    "asyncio: Async tests",
+]
+
+[tool.coverage.run]
+source = ["hag"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__init__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
