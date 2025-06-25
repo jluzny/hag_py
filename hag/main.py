@@ -23,24 +23,9 @@ from .core.container import ApplicationContainer, create_container
 from .core.exceptions import HAGError, ConfigurationError
 from .hvac.controller import HVACController
 
-# Configure structured logging
-structlog.configure(
-    processors=[
-        structlog.stdlib.filter_by_level,
-        structlog.stdlib.add_logger_name,
-        structlog.stdlib.add_log_level,
-        structlog.stdlib.PositionalArgumentsFormatter(),
-        structlog.processors.TimeStamper(fmt="iso"),
-        structlog.processors.StackInfoRenderer(),
-        structlog.processors.format_exc_info,
-        structlog.processors.UnicodeDecoder(),
-        structlog.processors.JSONRenderer(),
-    ],
-    context_class=dict,
-    logger_factory=structlog.stdlib.LoggerFactory(),
-    wrapper_class=structlog.stdlib.BoundLogger,
-    cache_logger_on_first_use=True,
-)
+# Configure colored logging immediately
+from .core.logging import setup_colored_logging
+setup_colored_logging("info")
 
 logger = structlog.get_logger(__name__)
 
@@ -98,10 +83,9 @@ class HAGApplication:
             settings = self.container.settings_from_file()
             config_log_level = settings.app_options.log_level
 
-            import logging
-
-            log_level = getattr(logging, config_log_level.upper())
-            logging.basicConfig(level=log_level, force=True)
+            # Setup colored logging with config level
+            from .core.logging import setup_colored_logging
+            setup_colored_logging(config_log_level)
 
             logger.info("Log level set from config", level=config_log_level)
 
@@ -260,7 +244,8 @@ Examples:
     cli_log_level = None
     if args.log_level != "info":  # "info" is the default
         cli_log_level = getattr(logging, args.log_level.upper())
-        logging.basicConfig(level=cli_log_level)
+        from .core.logging import setup_colored_logging
+        setup_colored_logging(args.log_level)
 
     # Handle config validation
     if args.validate_config:
