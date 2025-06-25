@@ -370,9 +370,15 @@ class HVACController:
                    recommended_mode=hvac_mode.name if hvac_mode else None,
                    state_changed=previous_state != current_state)
         
-        # Execute HVAC actions if state changed or explicit mode returned
-        if hvac_mode and (previous_state != current_state or hvac_mode.name.lower() != "off"):
+        # Execute HVAC actions if we have a valid mode recommendation
+        if hvac_mode:
+            logger.info("Executing HVAC command",
+                       mode=hvac_mode.name,
+                       state_changed=previous_state != current_state,
+                       reason="state machine recommendation")
             await self._execute_hvac_mode(hvac_mode)
+        else:
+            logger.debug("No HVAC mode recommendation, skipping execution")
 
     async def _execute_hvac_mode(self, hvac_mode) -> None:
         """Execute HVAC mode changes on actual devices."""
