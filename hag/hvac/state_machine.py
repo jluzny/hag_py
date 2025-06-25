@@ -52,7 +52,8 @@ class HVACState:
         self.current_hour = hour
         self.is_weekday = is_weekday
         
-        # Check if defrost is needed (.hvac_options.heating.defrost and 
+        # Check if defrost is needed
+        if (self.hvac_options.heating.defrost and 
             outdoor_temp <= self.hvac_options.heating.defrost.temperature_threshold):
             self.defrost_needed = True
         
@@ -83,7 +84,14 @@ class HVACStateMachine(StateMachine):
     
     """
     
-    # States (.to(heating)
+    # States
+    idle = State("Idle", initial=True)
+    heating = State("Heating") 
+    cooling = State("Cooling")
+    defrost = State("Defrost")
+    
+    # Transitions
+    start_heating = idle.to(heating)
     start_cooling = idle.to(cooling)
     start_defrost = heating.to(defrost) | idle.to(defrost)
     stop_heating = heating.to(idle)
@@ -113,7 +121,8 @@ class HVACStateMachine(StateMachine):
         """Update conditions and trigger evaluation."""
         self.state_data.update_conditions(indoor_temp, outdoor_temp, hour, is_weekday)
         
-        # Trigger state evaluation (.evaluate_conditions()
+        # Trigger state evaluation
+        self.evaluate_conditions()
 
     def evaluate_conditions(self) -> Optional[HVACMode]:
         """
@@ -166,7 +175,8 @@ class HVACStateMachine(StateMachine):
         if options.system_mode in [SystemMode.HEAT_ONLY, SystemMode.COOL_ONLY, SystemMode.OFF]:
             return options.system_mode
         
-        # Auto mode logic (direct .heating.temperature_thresholds
+        # Auto mode logic
+        heating_thresholds = options.heating.temperature_thresholds
         cooling_thresholds = options.cooling.temperature_thresholds
         
         # Priority 1: Urgent need (very hot/cold)

@@ -26,7 +26,8 @@ class HeatingStrategy(StateMachine):
     heating = State("Heating")
     defrosting = State("Defrost")
     
-    # Transitions (.to(heating)
+    # Transitions
+    start_heating = off.to(heating)
     start_defrost_from_off = off.to(defrosting)
     start_defrost_from_heating = heating.to(defrosting)
     stop_heating = heating.to(off)

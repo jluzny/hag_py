@@ -2,6 +2,16 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## IMPORTANT: Commit Message Guidelines
+
+**NEVER mention Claude, AI, or automated assistance in commit messages.** 
+
+- Remove all "🤖 Generated with [Claude Code]" footers
+- Remove all "Co-Authored-By: Claude" lines  
+- Write commit messages as if created by the human developer
+- Focus on technical changes and improvements only
+- Keep commit messages professional and direct
+
 ## Project Overview
 
 HAG (Home Assistant aGentic automation) Python implementation is a complete port of the Rust HAG HVAC system to Python, using modern Python frameworks for AI-powered HVAC automation.

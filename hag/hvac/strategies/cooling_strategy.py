@@ -24,7 +24,8 @@ class CoolingStrategy(StateMachine):
     cooling_off = State("CoolingOff", initial=True)
     cooling = State("Cooling")
 
-    # Transitions (.to(cooling)
+    # Transitions
+    start_cooling = cooling_off.to(cooling)
     stop_cooling = cooling.to(cooling_off)
     stay_cooling = cooling.to(cooling)
     stay_off = cooling_off.to(cooling_off)

@@ -68,7 +68,9 @@ class TestCoolingLogic:
         print(f"Cooling thresholds: min={cooling_options.cooling.temperature_thresholds.indoor_min}, "
               f"max={cooling_options.cooling.temperature_thresholds.indoor_max}, "
               f"outdoor_min={cooling_options.cooling.temperature_thresholds.outdoor_min}, "
-              f"outdoor_max={cooling_options.cooling.temperature_thresholds.outdoor_max}")        scenarios = [
+              f"outdoor_max={cooling_options.cooling.temperature_thresholds.outdoor_max}")
+        
+        scenarios = [
             # (indoor_temp, outdoor_temp, hour, is_weekday, expected_should_cool, description)
             (26.0, 25.0, 14, True, True, "Hot day - should cool"),
             (23.0, 25.0, 14, True, False, "Cool enough - should not cool"),
@@ -115,7 +117,9 @@ class TestCoolingLogic:
         print(f"Cooling range: {cooling_options.cooling.temperature_thresholds.indoor_min:.1f}°C - "
               f"{cooling_options.cooling.temperature_thresholds.indoor_max:.1f}°C "
               f"(outdoor: {cooling_options.cooling.temperature_thresholds.outdoor_min:.1f}°C to "
-              f"{cooling_options.cooling.temperature_thresholds.outdoor_max:.1f}°C)")        seasonal_scenarios = [
+              f"{cooling_options.cooling.temperature_thresholds.outdoor_max:.1f}°C)")
+        
+        seasonal_scenarios = [
             (18.0, 5.0, SystemMode.HEAT_ONLY, "Winter - cold indoor & outdoor -> should heat"),
             (26.0, 30.0, SystemMode.COOL_ONLY, "Summer - hot indoor & outdoor -> should cool"),
             (22.0, 18.0, SystemMode.OFF, "Spring - comfortable -> should be off"),
@@ -143,7 +147,9 @@ class TestCoolingLogic:
         
         strategy = CoolingStrategy(cooling_options)
         
-        print(f"Simulating HVAC entity control for {len(cooling_options.hvac_entities)} entities")        cooling_scenarios = [
+        print(f"Simulating HVAC entity control for {len(cooling_options.hvac_entities)} entities")
+        
+        cooling_scenarios = [
             (27.0, 30.0, True, "Hot summer day"),
             (25.5, 25.0, True, "Warm day"),
             (23.0, 20.0, False, "Cool day - no cooling needed"),
@@ -183,7 +189,9 @@ class TestCoolingLogic:
             else:
                 print("  No cooling needed - entities would be OFF")
             
-            assert actual_should_cool == should_cool, f"Cooling decision failed for: {scenario}"        living_room = next((e for e in cooling_options.hvac_entities 
+            assert actual_should_cool == should_cool, f"Cooling decision failed for: {scenario}"
+        
+        living_room = next((e for e in cooling_options.hvac_entities 
                            if e.entity_id == "climate.living_room_ac"), None)
         assert living_room is not None, "Living room AC should exist"
         assert living_room.entity_id == "climate.living_room_ac"
@@ -217,7 +225,9 @@ class TestCoolingLogic:
             weekday_active = is_hour_active(cooling_options, hour, True)
             weekend_active = is_hour_active(cooling_options, hour, False)
             
-            print(f"Hour {hour}: Weekday: {weekday_active}, Weekend: {weekend_active}")        assert is_hour_active(cooling_options, 8, True) == True, "8 AM weekday should be active"
+            print(f"Hour {hour}: Weekday: {weekday_active}, Weekend: {weekend_active}")
+        
+        assert is_hour_active(cooling_options, 8, True) == True, "8 AM weekday should be active"
         assert is_hour_active(cooling_options, 21, True) == True, "9 PM weekday should be active"
         assert is_hour_active(cooling_options, 7, True) == False, "7 AM weekday should be inactive"
         assert is_hour_active(cooling_options, 22, True) == False, "10 PM weekday should be inactive"
@@ -289,7 +299,9 @@ def simulate_auto_mode_decision(options: HvacOptions, indoor_temp: float, outdoo
     
     # Check cooling conditions
     can_cool = (indoor_temp > cooling_thresholds.indoor_max and
-                cooling_thresholds.outdoor_min <= outdoor_temp <= cooling_thresholds.outdoor_max)    if can_heat and not can_cool:
+                cooling_thresholds.outdoor_min <= outdoor_temp <= cooling_thresholds.outdoor_max)
+    
+    if can_heat and not can_cool:
         return SystemMode.HEAT_ONLY
     elif can_cool and not can_heat:
         return SystemMode.COOL_ONLY

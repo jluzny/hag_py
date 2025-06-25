@@ -67,7 +67,9 @@ class TestHeatingLogic:
         
         """
         
-        strategy = HeatingStrategy(heating_options)        scenarios = [
+        strategy = HeatingStrategy(heating_options)
+        
+        scenarios = [
             # (indoor_temp, outdoor_temp, hour, is_weekday, expected_should_heat, description)
             (18.0, 5.0, 14, True, True, "Cold day - should heat"),
             (21.0, 5.0, 14, True, False, "Warm enough - should not heat"),
@@ -107,7 +109,9 @@ class TestHeatingLogic:
         
         print(f"Defrost threshold: {heating_options.heating.defrost.temperature_threshold}°C, "
               f"period: {heating_options.heating.defrost.period_seconds}s, "
-              f"duration: {heating_options.heating.defrost.duration_seconds}s")        defrost_scenarios = [
+              f"duration: {heating_options.heating.defrost.duration_seconds}s")
+        
+        defrost_scenarios = [
             (5.0, False, "Above defrost threshold - no defrost needed"),
             (0.0, True, "At defrost threshold - defrost needed"),
             (-5.0, True, "Below defrost threshold - defrost needed"),
@@ -197,7 +201,9 @@ class TestHeatingLogic:
         
         strategy = HeatingStrategy(heating_options)
         
-        print(f"Simulating heating entity control for {len(heating_options.hvac_entities)} entities")        heating_scenarios = [
+        print(f"Simulating heating entity control for {len(heating_options.hvac_entities)} entities")
+        
+        heating_scenarios = [
             (17.0, 5.0, True, "Cold winter day"),
             (19.5, 10.0, True, "Cool day"),
             (21.0, 15.0, False, "Warm day - no heating needed"),
