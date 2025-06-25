@@ -16,6 +16,7 @@ from ..state_machine import HVACStateMachine
 
 logger = structlog.get_logger(__name__)
 
+
 class TemperatureMonitorInput(BaseModel):
     """Input schema for temperature monitoring tool."""
 
@@ -23,11 +24,11 @@ class TemperatureMonitorInput(BaseModel):
     outdoor_sensor: str = Field(description="Outdoor temperature sensor entity ID")
     force_update: bool = Field(default=False, description="Force sensor state update")
 
+
 class TemperatureMonitorTool(BaseTool):
     """
     LangChain tool for monitoring temperature sensors and updating HVAC state.
 
-    
     """
 
     name: str = "temperature_monitor"
@@ -235,4 +236,3 @@ class TemperatureMonitorTool(BaseTool):
         }
 
         return analysis
-

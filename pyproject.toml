@@ -8,12 +8,12 @@ version = "0.1.0"
 description = "HAG (Home Assistant aGentic automation) - Python HVAC automation system"
 authors = ["HAG Project <noreply@example.com>"]
 readme = "README.md"
-packages = [{include = "hag"}]
+packages = [{ include = "hag" }]
 
 [tool.poetry.dependencies]
-python = "^3.11"
-langchain = "^0.1.0"
-langchain-core = "^0.1.0"
+python = "^3.13"
+langchain = "^0.3.0"
+langchain-core = "^0.3.0"
 langchain-openai = "^0.3.0"
 python-statemachine = "^2.1.0"
 dependency-injector = "^4.41.0"
@@ -68,30 +68,27 @@ minversion = "7.0"
 addopts = "-ra -q --strict-markers --strict-config"
 testpaths = ["tests"]
 markers = [
-    "unit: Unit tests",
-    "integration: Integration tests", 
-    "slow: Slow tests",
-    "asyncio: Async tests",
+  "unit: Unit tests",
+  "integration: Integration tests",
+  "slow: Slow tests",
+  "asyncio: Async tests",
 ]
 
 [tool.coverage.run]
 source = ["hag"]
-omit = [
-    "*/tests/*",
-    "*/test_*",
-    "*/__init__.py",
-]
+omit = ["*/tests/*", "*/test_*", "*/__init__.py"]
 
 [tool.coverage.report]
 exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "if self.debug:",
-    "if settings.DEBUG",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "if 0:",
-    "if __name__ == .__main__.:",
-    "class .*\\bProtocol\\):",
-    "@(abc\\.)?abstractmethod",
+  "pragma: no cover",
+  "def __repr__",
+  "if self.debug:",
+  "if settings.DEBUG",
+  "raise AssertionError",
+  "raise NotImplementedError",
+  "if 0:",
+  "if __name__ == .__main__.:",
+  "class .*\\bProtocol\\):",
+  "@(abc\\.)?abstractmethod",
 ]
+

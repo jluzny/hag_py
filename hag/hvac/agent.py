@@ -22,11 +22,12 @@ from .tools import TemperatureMonitorTool, HVACControlTool, SensorReaderTool
 
 logger = structlog.get_logger(__name__)
 
+
 class HVACAgent:
     """
     Intelligent HVAC control agent using LangChain.
 
-    
+
     """
 
     def __init__(
@@ -405,4 +406,3 @@ Remember: You are controlling real HVAC equipment that affects user comfort and 
         from datetime import datetime
 
         return datetime.now().isoformat()
-
