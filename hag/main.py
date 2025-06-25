@@ -51,8 +51,9 @@ class HAGApplication:
     
     """
     
-    def __init__(self, config_file: Optional[str] = None):
+    def __init__(self, config_file: Optional[str] = None, cli_log_level: Optional[int] = None):
         self.config_file = config_file or self._find_config_file()
+        self.cli_log_level = cli_log_level
         self.container: Optional[ApplicationContainer] = None
         self.hvac_controller: Optional[HVACController] = None
         self.shutdown_event = asyncio.Event()
@@ -81,6 +82,27 @@ class HAGApplication:
         # Default path (may not exist)
         return "config/hvac_config.yaml"
 
+    def _setup_logging(self) -> None:
+        """Setup logging based on configuration."""
+        
+        # If CLI already set the log level, don't override
+        if self.cli_log_level is not None:
+            return
+        
+        # Get log level from config
+        try:
+            settings = self.container.settings_from_file()
+            config_log_level = settings.app_options.log_level
+            
+            import logging
+            log_level = getattr(logging, config_log_level.upper())
+            logging.basicConfig(level=log_level, force=True)
+            
+            logger.info("Log level set from config", level=config_log_level)
+            
+        except Exception as e:
+            logger.warning("Failed to set log level from config", error=str(e))
+
     async def setup(self) -> None:
         """Setup application dependencies."""
         
@@ -93,6 +115,9 @@ class HAGApplication:
             
             # Create dependency injection container
             self.container = create_container(self.config_file)
+            
+            # Setup logging based on config (if not overridden by CLI)
+            self._setup_logging()
             
             # Get HVAC controller from container
             self.hvac_controller = self.container.hvac_controller()
@@ -159,10 +184,10 @@ class HAGApplication:
         signal.signal(signal.SIGTERM, signal_handler)
 
 # CLI Interface
-async def main_async(config_file: Optional[str] = None) -> None:
+async def main_async(config_file: Optional[str] = None, cli_log_level: Optional[int] = None) -> None:
     """Async main function."""
     
-    app = HAGApplication(config_file)
+    app = HAGApplication(config_file, cli_log_level)
     
     try:
         await app.setup()
@@ -221,10 +246,15 @@ Examples:
     
     args = parser.parse_args()
     
-    # Setup logging level
+    # Setup logging level - prioritize config file, but allow CLI override
     import logging
-    log_level = getattr(logging, args.log_level.upper())
-    logging.basicConfig(level=log_level)
+    
+    # If log level was explicitly provided via CLI, use it
+    # Otherwise, we'll set it after loading config
+    cli_log_level = None
+    if args.log_level != "info":  # "info" is the default
+        cli_log_level = getattr(logging, args.log_level.upper())
+        logging.basicConfig(level=cli_log_level)
     
     # Handle config validation
     if args.validate_config:
@@ -234,6 +264,8 @@ Examples:
             settings = ConfigLoader.load_settings(config_file)
             
             print(f"✅ Configuration is valid: {config_file}")
+            print(f"   Log level: {settings.app_options.log_level}")
+            print(f"   AI enabled: {settings.app_options.use_ai}")
             print(f"   Temperature sensor: {settings.hvac_options.temp_sensor}")
             print(f"   System mode: {settings.hvac_options.system_mode}")
             print(f"   HVAC entities: {len(settings.hvac_options.hvac_entities)}")
@@ -249,7 +281,7 @@ Examples:
     
     # Run the application
     try:
-        asyncio.run(main_async(args.config))
+        asyncio.run(main_async(args.config, cli_log_level))
     except KeyboardInterrupt:
         print("\n👋 Goodbye!")
         sys.exit(0)

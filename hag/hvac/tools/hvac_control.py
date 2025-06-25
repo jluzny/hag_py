@@ -61,6 +61,9 @@ class HVACControlTool(BaseTool):
     Use this tool when you need to change HVAC operation or implement AI-driven decisions."""
 
     args_schema: Type[BaseModel] = HVACControlInput
+    ha_client: HomeAssistantClient = Field(exclude=True)
+    hvac_options: HvacOptions = Field(exclude=True)
+    state_machine: HVACStateMachine = Field(exclude=True)
 
     def __init__(
         self,
@@ -68,10 +71,7 @@ class HVACControlTool(BaseTool):
         hvac_options: HvacOptions,
         state_machine: HVACStateMachine,
     ):
-        super().__init__()
-        self.ha_client = ha_client
-        self.hvac_options = hvac_options
-        self.state_machine = state_machine
+        super().__init__(ha_client=ha_client, hvac_options=hvac_options, state_machine=state_machine)
 
     async def _arun(
         self,

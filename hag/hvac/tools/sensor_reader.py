@@ -49,11 +49,11 @@ class SensorReaderTool(BaseTool):
     - Read status of devices or systems
     - Get multiple sensor readings for analysis"""
 
-    args_schema: Type[BaseTool] = SensorReaderInput
+    args_schema: Type[BaseModel] = SensorReaderInput
+    ha_client: HomeAssistantClient = Field(exclude=True)
 
     def __init__(self, ha_client: HomeAssistantClient):
-        super().__init__()
-        self.ha_client = ha_client
+        super().__init__(ha_client=ha_client)
 
     async def _arun(
         self,

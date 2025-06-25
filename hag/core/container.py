@@ -43,23 +43,24 @@ class ApplicationContainer(containers.DeclarativeContainer):
         HVACStateMachine, hvac_options=settings_from_file.provided.hvac_options
     )
 
-    # HVAC Agent (AI-powered)
+    # HVAC Agent (AI-powered) - conditional creation
     hvac_agent = providers.Singleton(
         HVACAgent,
         ha_client=ha_client,
         hvac_options=settings_from_file.provided.hvac_options,
         state_machine=hvac_state_machine,
-        llm_model=config.llm_model.as_(str),
-        temperature=config.llm_temperature.as_(float),
+        llm_model=settings_from_file.provided.app_options.ai_model,
+        temperature=settings_from_file.provided.app_options.ai_temperature,
     )
 
-    # HVAC Controller (orchestrator)
+    # HVAC Controller (orchestrator) - AI configurable from settings
     hvac_controller = providers.Singleton(
         "hag.hvac.controller.HVACController",
         ha_client=ha_client,
         hvac_options=settings_from_file.provided.hvac_options,
         state_machine=hvac_state_machine,
         hvac_agent=hvac_agent,
+        use_ai=settings_from_file.provided.app_options.use_ai,
     )
 
 class ContainerBuilder:

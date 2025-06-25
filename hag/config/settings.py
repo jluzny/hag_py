@@ -16,6 +16,13 @@ class SystemMode(str, Enum):
     COOL_ONLY = "cool_only"
     OFF = "off"
 
+class LogLevel(str, Enum):
+    """Logging levels."""
+    DEBUG = "debug"
+    INFO = "info"
+    WARNING = "warning"
+    ERROR = "error"
+
 class HassOptions(BaseModel):
     """Home Assistant connection options."""
     ws_url: str = Field(..., description="WebSocket URL for Home Assistant")
@@ -129,8 +136,16 @@ class HvacOptions(BaseModel):
             raise ValueError('Sensor ID must be in format "sensor.entity_name"')
         return v
 
+class ApplicationOptions(BaseModel):
+    """Application-level configuration options."""
+    log_level: LogLevel = Field(default=LogLevel.INFO, description="Logging level")
+    use_ai: bool = Field(default=False, description="Enable AI agent for HVAC decisions")
+    ai_model: str = Field(default="gpt-3.5-turbo", description="AI model to use")
+    ai_temperature: float = Field(default=0.1, description="AI model temperature")
+
 class Settings(BaseSettings):
     """Main application settings."""
+    app_options: ApplicationOptions = Field(default_factory=ApplicationOptions)
     hass_options: HassOptions
     hvac_options: HvacOptions
 

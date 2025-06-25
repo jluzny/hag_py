@@ -43,11 +43,11 @@ class TemperatureMonitorTool(BaseTool):
     Use this tool when you need current temperature data or want to trigger HVAC evaluation."""
 
     args_schema: Type[BaseModel] | None = TemperatureMonitorInput
+    ha_client: HomeAssistantClient = Field(exclude=True)
+    state_machine: HVACStateMachine = Field(exclude=True)
 
     def __init__(self, ha_client: HomeAssistantClient, state_machine: HVACStateMachine):
-        super().__init__()
-        self.ha_client = ha_client
-        self.state_machine = state_machine
+        super().__init__(ha_client=ha_client, state_machine=state_machine)
 
     async def _arun(
         self, indoor_sensor: str, outdoor_sensor: str, force_update: bool = False

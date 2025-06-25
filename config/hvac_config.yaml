@@ -1,51 +1,65 @@
 # HAG HVAC Configuration
 # Direct port from Rust configuration with Python-specific enhancements
 
+app_options:
+  log_level: "debug" # debug, info, warning, error
+  use_ai: false # Enable AI agent for intelligent decisions
+  ai_model: "gpt-3.5-turbo" # AI model to use
+  ai_temperature: 0.1 # AI model temperature
+
 hass_options:
-  ws_url: "ws://homeassistant.local:8123/api/websocket"
-  rest_url: "http://homeassistant.local:8123"
-  token: "${HASS_TOKEN}"  # Set via environment variable
+  ws_url: "ws://192.168.0.204:8123/api/websocket"
+  rest_url: "http://192.168.0.204:8123"
+  token: "override it by env variable HASS_HassOptions__Token"
   max_retries: 5
   retry_delay_ms: 1000
   state_check_interval: 300000
 
 hvac_options:
-  temp_sensor: "sensor.indoor_temperature"
+  temp_sensor: "sensor.1st_floor_hall_multisensor_temperature"
   outdoor_sensor: "sensor.openweathermap_temperature"
-  system_mode: "auto"  # auto, heat_only, cool_only, off
-  
+  system_mode: "auto" # auto, heat_only, cool_only, off
+
   hvac_entities:
-    - entity_id: "climate.hvac_system"
+    - entity_id: "climate.living_room_ac"
       enabled: true
       defrost: true
-    
     - entity_id: "climate.bedroom_ac"
-      enabled: false
+      enabled: true
+      defrost: false
+    - entity_id: "climate.matej_ac"
+      enabled: true
+      defrost: false
+    - entity_id: "climate.anicka_ac"
+      enabled: true
+      defrost: false
+    - entity_id: "climate.radek_ac"
+      enabled: true
       defrost: false
 
   heating:
     temperature: 21.0
-    preset_mode: "comfort"
+    preset_mode: "windFreeSleep"
     temperature_thresholds:
       indoor_min: 19.7
       indoor_max: 20.2
-      outdoor_min: -10.0
+      outdoor_min: -5.0
       outdoor_max: 15.0
     defrost:
       temperature_threshold: 0.0
-      period_seconds: 3600
+      period_seconds: 7200
       duration_seconds: 300
 
   cooling:
     temperature: 24.0
-    preset_mode: "eco"
+    preset_mode: "windFree"
     temperature_thresholds:
       indoor_min: 23.0
       indoor_max: 23.5
-      outdoor_min: 10.0
+      outdoor_min: 32.0
       outdoor_max: 45.0
 
   active_hours:
     start: 8
     start_weekday: 7
-    end: 22
+    end: 20

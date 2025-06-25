@@ -243,7 +243,17 @@ class HomeAssistantClient:
         try:
             message = WebSocketMessage.from_dict(data)
             
+            # Debug: Log all messages to see what we're receiving
+            logger.debug("Received WebSocket message", 
+                        message_type=message.message_type,
+                        has_event=message.event is not None,
+                        event_type=message.event.event_type if message.event else None)
+            
             if message.event and message.event.event_type in self.event_handlers:
+                logger.debug("Processing event", 
+                           event_type=message.event.event_type,
+                           handlers_count=len(self.event_handlers[message.event.event_type]))
+                
                 # Dispatch to registered handlers
                 for handler in self.event_handlers[message.event.event_type]:
                     try:
@@ -252,6 +262,10 @@ class HomeAssistantClient:
                         logger.error("Error in event handler",
                                    event_type=message.event.event_type,
                                    error=str(e))
+            elif message.event:
+                logger.debug("Received unhandled event", 
+                           event_type=message.event.event_type,
+                           available_handlers=list(self.event_handlers.keys()))
             
         except Exception as e:
             logger.error("Failed to handle WebSocket message", 
