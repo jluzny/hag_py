@@ -49,7 +49,7 @@ class SensorReaderTool(BaseTool):
     - Read status of devices or systems
     - Get multiple sensor readings for analysis"""
 
-    args_schema: Type[BaseModel] = SensorReaderInput
+    args_schema = SensorReaderInput
     ha_client: HomeAssistantClient = Field(exclude=True)
 
     def __init__(self, ha_client: HomeAssistantClient):
@@ -95,13 +95,13 @@ class SensorReaderTool(BaseTool):
 
                 # Add attributes if requested
                 if include_attributes:
-                    entity_result["attributes"] = state.attributes
+                    entity_result["attributes"] = str(state.attributes)
 
                 # Try to get numeric value
                 numeric_value = state.get_numeric_state()
                 if numeric_value is not None:
-                    entity_result["numeric_value"] = numeric_value
-                    entity_result["is_numeric"] = True
+                    entity_result["numeric_value"] = str(numeric_value)
+                    entity_result["is_numeric"] = "true"
                     numeric_values[entity_id] = numeric_value
 
                     # Add unit from attributes if available
@@ -109,7 +109,7 @@ class SensorReaderTool(BaseTool):
                     if unit:
                         entity_result["unit"] = unit
                 else:
-                    entity_result["is_numeric"] = False
+                    entity_result["is_numeric"] = "false"
 
                 # Add to results if not filtering or if numeric when filtering
                 if not filter_numeric or entity_result["is_numeric"]:

@@ -127,7 +127,7 @@ class HassServiceCall:
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for API call."""
-        result = {
+        result: Dict[str, Any] = {
             "domain": self.domain,
             "service": self.service,
         }

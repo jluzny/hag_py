@@ -7,7 +7,7 @@ Type-safe configuration structures with Pydantic validation.
 from typing import List, Optional
 from enum import Enum
 from pydantic import BaseModel, Field, field_validator, ConfigDict
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class SystemMode(str, Enum):
     """HVAC system operation modes."""
@@ -149,7 +149,7 @@ class Settings(BaseSettings):
     hass_options: HassOptions
     hvac_options: HvacOptions
 
-    model_config = ConfigDict(
+    model_config = SettingsConfigDict(
         env_file=".env",
         env_nested_delimiter="__",
         case_sensitive=False,

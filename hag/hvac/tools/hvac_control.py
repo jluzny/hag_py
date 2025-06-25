@@ -60,7 +60,7 @@ class HVACControlTool(BaseTool):
     
     Use this tool when you need to change HVAC operation or implement AI-driven decisions."""
 
-    args_schema: Type[BaseModel] = HVACControlInput
+    args_schema = HVACControlInput
     ha_client: HomeAssistantClient = Field(exclude=True)
     hvac_options: HvacOptions = Field(exclude=True)
     state_machine: HVACStateMachine = Field(exclude=True)

@@ -5,6 +5,7 @@ rs with Python async/await and enhanced CLI.
 """
 
 import asyncio
+import logging
 import sys
 import signal
 import os
@@ -80,12 +81,15 @@ class HAGApplication:
 
         # Get log level from config
         try:
-            settings = self.container.settings_from_file()
-            config_log_level = settings.app_options.log_level
+            if self.container:
+                settings = self.container.settings_from_file()
+                config_log_level = settings.app_options.log_level
+            else:
+                config_log_level = logging.INFO
 
             # Setup colored logging with config level
             from .core.logging import setup_colored_logging
-            setup_colored_logging(config_log_level)
+            setup_colored_logging(str(config_log_level))
 
             logger.info("Log level set from config", level=config_log_level)
 
@@ -133,7 +137,8 @@ class HAGApplication:
             self._setup_signal_handlers()
 
             # Start HVAC controller
-            await self.hvac_controller.start()
+            if self.hvac_controller:
+                await self.hvac_controller.start()
 
             logger.info("✅ HAG HVAC system is running")
             logger.info("📊 Use Ctrl+C to stop the system gracefully")

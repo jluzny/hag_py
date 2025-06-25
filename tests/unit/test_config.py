@@ -343,8 +343,8 @@ class TestSettings:
         
         # Should create valid settings (overnight ranges are valid)
         settings = Settings(**invalid_hours_config)
-        assert settings.hvac_options.active_hours.start == 20
-        assert settings.hvac_options.active_hours.end == 6
+        assert settings.hvac_options.active_hours and settings.hvac_options.active_hours.start == 20
+        assert settings.hvac_options.active_hours and settings.hvac_options.active_hours.end == 6
         
         # Test extreme temperature thresholds
         extreme_config = {

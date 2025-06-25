@@ -155,10 +155,10 @@ class HVACStateMachine(StateMachine):
         
         # Create state change data for strategies
         state_change_data = StateChangeData(
-            current_temp=self.state_data.current_temp,
-            weather_temp=self.state_data.outdoor_temp,
-            hour=self.state_data.current_hour,
-            is_weekday=self.state_data.is_weekday
+            current_temp=self.state_data.current_temp or 20.0,
+            weather_temp=self.state_data.outdoor_temp or 20.0,
+            hour=self.state_data.current_hour or 12,
+            is_weekday=self.state_data.is_weekday if self.state_data.is_weekday is not None else True
         )
         
         # Determine target mode based on system configuration
@@ -215,8 +215,9 @@ class HVACStateMachine(StateMachine):
                    cooling_thresholds=f"{cooling_thresholds.indoor_min}-{cooling_thresholds.indoor_max}°C indoor, {cooling_thresholds.outdoor_min}-{cooling_thresholds.outdoor_max}°C outdoor")
         
         # Priority 1: Urgent need (very hot/cold)
-        if indoor_temp < heating_thresholds.indoor_min:
-            if (heating_thresholds.outdoor_min <= outdoor_temp <= heating_thresholds.outdoor_max):
+        if indoor_temp and indoor_temp < heating_thresholds.indoor_min:
+            if (outdoor_temp is not None and 
+                heating_thresholds.outdoor_min <= outdoor_temp <= heating_thresholds.outdoor_max):
                 logger.info("🔥 HVAC Mode Decision: URGENT HEATING needed",
                            indoor_temp=indoor_temp,
                            threshold=heating_thresholds.indoor_min,
@@ -229,8 +230,9 @@ class HVACStateMachine(StateMachine):
                            outdoor_temp=outdoor_temp,
                            outdoor_range=f"{heating_thresholds.outdoor_min}-{heating_thresholds.outdoor_max}°C")
         
-        if indoor_temp > cooling_thresholds.indoor_max:
-            if (cooling_thresholds.outdoor_min <= outdoor_temp <= cooling_thresholds.outdoor_max):
+        if indoor_temp and indoor_temp > cooling_thresholds.indoor_max:
+            if (outdoor_temp is not None and 
+                cooling_thresholds.outdoor_min <= outdoor_temp <= cooling_thresholds.outdoor_max):
                 logger.info("❄️ HVAC Mode Decision: URGENT COOLING needed",
                            indoor_temp=indoor_temp,
                            threshold=cooling_thresholds.indoor_max,
@@ -244,8 +246,10 @@ class HVACStateMachine(StateMachine):
                            outdoor_range=f"{cooling_thresholds.outdoor_min}-{cooling_thresholds.outdoor_max}°C")
         
         # Priority 2: Outdoor temperature guidance
-        heating_can_operate = (heating_thresholds.outdoor_min <= outdoor_temp <= heating_thresholds.outdoor_max)
-        cooling_can_operate = (cooling_thresholds.outdoor_min <= outdoor_temp <= cooling_thresholds.outdoor_max)
+        heating_can_operate = (outdoor_temp is not None and 
+                              heating_thresholds.outdoor_min <= outdoor_temp <= heating_thresholds.outdoor_max)
+        cooling_can_operate = (outdoor_temp is not None and 
+                              cooling_thresholds.outdoor_min <= outdoor_temp <= cooling_thresholds.outdoor_max)
         
         logger.info("🌡️ HVAC Mode Decision: System capability analysis",
                    heating_can_operate=heating_can_operate,
@@ -255,12 +259,12 @@ class HVACStateMachine(StateMachine):
         if heating_can_operate and cooling_can_operate:
             # Both can operate - use outdoor temperature to decide
             mid_temp = (heating_thresholds.outdoor_max + cooling_thresholds.outdoor_min) / 2.0
-            target = SystemMode.HEAT_ONLY if outdoor_temp <= mid_temp else SystemMode.COOL_ONLY
+            target = SystemMode.HEAT_ONLY if (outdoor_temp is not None and outdoor_temp <= mid_temp) else SystemMode.COOL_ONLY
             logger.info("⚖️ HVAC Mode Decision: Both systems available, choosing by outdoor temperature",
                         outdoor_temp=outdoor_temp,
                         mid_temp=mid_temp,
                         selected=target.value,
-                        reason=f"outdoor temp {'<=' if outdoor_temp <= mid_temp else '>'} midpoint")
+                        reason=f"outdoor temp {'<=' if (outdoor_temp is not None and outdoor_temp <= mid_temp) else '>'} midpoint")
             return target
         elif heating_can_operate:
             logger.info("🔥 HVAC Mode Decision: Only heating can operate",
@@ -305,17 +309,17 @@ class HVACStateMachine(StateMachine):
             if strategy_result == "heating":
                 if self.current_state == self.idle:
                     logger.info("🔥 HVAC Transition: Idle → Heating")
-                    self.start_heating()
+                    self.start_heating()  # type: ignore
                 elif self.current_state == self.cooling:
                     logger.info("🔥 HVAC Transition: Cooling → Heating")
-                    self.switch_to_heating()
+                    self.switch_to_heating()  # type: ignore
                 return HVACMode.HEAT
                 
             elif strategy_result == "defrosting":
                 if self.current_state != self.defrost:
                     logger.info("🧊 HVAC Transition: Starting defrost cycle",
                                current_state=self.current_state.name)
-                    self.start_defrost()
+                    self.start_defrost()  # type: ignore
                 return HVACMode.OFF  # Defrost mode
                 
             else:  # "off"
@@ -339,10 +343,10 @@ class HVACStateMachine(StateMachine):
             if strategy_result == "cooling":
                 if self.current_state == self.idle:
                     logger.info("❄️ HVAC Transition: Idle → Cooling")
-                    self.start_cooling()
+                    self.start_cooling()  # type: ignore
                 elif self.current_state == self.heating:
                     logger.info("❄️ HVAC Transition: Heating → Cooling")
-                    self.switch_to_cooling()
+                    self.switch_to_cooling()  # type: ignore
                 return HVACMode.COOL
                 
             else:  # "cooling_off"
@@ -362,16 +366,16 @@ class HVACStateMachine(StateMachine):
         
         if target_mode == SystemMode.HEAT_ONLY:
             if current == self.idle:
-                self.start_heating()
+                self.start_heating()  # type: ignore
             elif current == self.cooling:
-                self.switch_to_heating()
+                self.switch_to_heating()  # type: ignore
             return HVACMode.HEAT
             
         elif target_mode == SystemMode.COOL_ONLY:
             if current == self.idle:
-                self.start_cooling()
+                self.start_cooling()  # type: ignore
             elif current == self.heating:
-                self.switch_to_cooling()
+                self.switch_to_cooling()  # type: ignore
             return HVACMode.COOL
             
         else:  # SystemMode.OFF
@@ -382,13 +386,13 @@ class HVACStateMachine(StateMachine):
         """Transition to idle from any state."""
         if self.current_state == self.heating:
             logger.info("⏸️ HVAC Transition: Heating → Idle")
-            self.stop_heating()
+            self.stop_heating()  # type: ignore
         elif self.current_state == self.cooling:
             logger.info("⏸️ HVAC Transition: Cooling → Idle")
-            self.stop_cooling()
+            self.stop_cooling()  # type: ignore
         elif self.current_state == self.defrost:
             logger.info("⏸️ HVAC Transition: Defrost → Idle")
-            self.end_defrost()
+            self.end_defrost()  # type: ignore
         elif self.current_state == self.idle:
             logger.debug("⏸️ HVAC Transition: Already idle, no transition needed")
 

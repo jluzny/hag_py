@@ -6,7 +6,7 @@ Home Assistant WebSocket and REST client.
 import asyncio
 import json
 import aiohttp
-from typing import Dict, Any, Optional, Callable, List
+from typing import Dict, Any, Optional, Callable, List, Awaitable
 from urllib.parse import urljoin
 import structlog
 
@@ -75,6 +75,8 @@ class HomeAssistantClient:
 
     async def _connect_websocket(self) -> None:
         """Establish WebSocket connection and authenticate."""
+        if self.session is None:
+            raise RuntimeError("Session not initialized")
         self.ws = await self.session.ws_connect(self.config.ws_url)
         
         # Read auth_required message
@@ -194,7 +196,7 @@ class HomeAssistantClient:
         logger.debug("Subscribing to events", event_type=event_type or "all")
         await self.ws.send_str(json.dumps(message))
 
-    def add_event_handler(self, event_type: str, handler: Callable[[HassEvent], None]) -> None:
+    def add_event_handler(self, event_type: str, handler: Callable[[HassEvent], None] | Callable[[HassEvent], Awaitable[None]]) -> None:
         """Add event handler for specific event type."""
         if event_type not in self.event_handlers:
             self.event_handlers[event_type] = []
@@ -257,7 +259,10 @@ class HomeAssistantClient:
                 # Dispatch to registered handlers
                 for handler in self.event_handlers[message.event.event_type]:
                     try:
-                        await handler(message.event)
+                        if asyncio.iscoroutinefunction(handler):
+                            await handler(message.event)
+                        else:
+                            handler(message.event)
                     except Exception as e:
                         logger.error("Error in event handler",
                                    event_type=message.event.event_type,

@@ -74,43 +74,43 @@ class HeatingStrategy(StateMachine):
         # Port Rust smlang transition logic exactly
         if current == "Off":
             if can_operate and is_temp_too_low and need_defrost:
-                self.start_defrost_from_off()
+                self.start_defrost_from_off()  # type: ignore
                 self._start_defrost(data)
                 return "defrosting"
             elif can_operate and is_temp_too_low:
-                self.start_heating()
+                self.start_heating()  # type: ignore
                 self._start_or_stay_heating(data)
                 return "heating"
             else:
-                self.stay_off()
+                self.stay_off()  # type: ignore
                 self._switch_or_stay_off(data)
                 return "off"
                 
         elif current == "Heating":
             if can_operate and need_defrost:
-                self.start_defrost_from_heating()
+                self.start_defrost_from_heating()  # type: ignore
                 self._start_defrost(data)
                 return "defrosting"
             elif not can_operate or is_temp_too_high:
-                self.stop_heating()
+                self.stop_heating()  # type: ignore
                 self._switch_or_stay_off(data)
                 return "off"
             else:
-                self.stay_heating()
+                self.stay_heating()  # type: ignore
                 self._start_or_stay_heating(data)
                 return "heating"
                 
         elif current == "Defrost":
             if is_defrost_complete:
-                self.stop_defrost()
+                self.stop_defrost()  # type: ignore
                 self._stop_defrost(data)
                 return "off"
             elif not can_operate:
-                self.stop_defrost()
+                self.stop_defrost()  # type: ignore
                 self._switch_or_stay_off(data)
                 return "off"
             else:
-                self.stay_defrosting()
+                self.stay_defrosting()  # type: ignore
                 self._continue_defrost(data)
                 return "defrosting"
         

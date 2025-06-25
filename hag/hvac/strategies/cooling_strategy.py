@@ -67,21 +67,21 @@ class CoolingStrategy(StateMachine):
 
         if current == "CoolingOff":
             if can_operate and is_temp_too_high:
-                self.start_cooling()
+                self.start_cooling()  # type: ignore
                 self._start_or_stay_cooling(data)
                 return "cooling"
             else:
-                self.stay_off()
+                self.stay_off()  # type: ignore
                 self._switch_or_stay_off(data)
                 return "cooling_off"
 
         elif current == "Cooling":
             if not can_operate or is_temp_too_low:
-                self.stop_cooling()
+                self.stop_cooling()  # type: ignore
                 self._switch_or_stay_off(data)
                 return "cooling_off"
             else:
-                self.stay_cooling()
+                self.stay_cooling()  # type: ignore
                 self._start_or_stay_cooling(data)
                 return "cooling"
 

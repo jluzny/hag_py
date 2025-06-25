@@ -42,7 +42,7 @@ class TemperatureMonitorTool(BaseTool):
     
     Use this tool when you need current temperature data or want to trigger HVAC evaluation."""
 
-    args_schema: Type[BaseModel] | None = TemperatureMonitorInput
+    args_schema = TemperatureMonitorInput
     ha_client: HomeAssistantClient = Field(exclude=True)
     state_machine: HVACStateMachine = Field(exclude=True)
 

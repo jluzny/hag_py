@@ -170,7 +170,8 @@ class HVACController:
                 }
                 
                 # Process through AI agent
-                await self.hvac_agent.process_temperature_change(event_data)
+                if self.hvac_agent:
+                    await self.hvac_agent.process_temperature_change(event_data)
             else:
                 # Use direct state machine logic
                 await self._process_state_change_direct(state_change)
@@ -220,7 +221,7 @@ class HVACController:
         logger.debug("Performing periodic HVAC evaluation", ai_enabled=self.use_ai)
         
         try:
-            if self.use_ai:
+            if self.use_ai and self.hvac_agent:
                 # Get status summary from AI agent
                 status = await self.hvac_agent.get_status_summary()
                 
@@ -256,7 +257,8 @@ class HVACController:
                     "timestamp": datetime.now().isoformat()
                 }
                 
-                await self.hvac_agent.process_temperature_change(initial_event)
+                if self.hvac_agent:
+                    await self.hvac_agent.process_temperature_change(initial_event)
             else:
                 # Trigger direct state machine evaluation
                 await self._evaluate_state_machine_direct()
@@ -296,7 +298,7 @@ class HVACController:
         # Update state machine conditions
         self.state_machine.update_conditions(
             indoor_temp=new_temp,
-            outdoor_temp=outdoor_temp,
+            outdoor_temp=outdoor_temp or 20.0,  # Default if not available
             hour=current_hour,
             is_weekday=is_weekday
         )
@@ -342,7 +344,7 @@ class HVACController:
             
             self.state_machine.update_conditions(
                 indoor_temp=indoor_temp,
-                outdoor_temp=outdoor_temp,
+                outdoor_temp=outdoor_temp or 20.0,  # Default if not available
                 hour=current_hour,
                 is_weekday=is_weekday
             )
@@ -480,7 +482,7 @@ class HVACController:
             raise StateError("HVAC controller is not running")
         
         try:
-            if self.use_ai:
+            if self.use_ai and self.hvac_agent:
                 return await self.hvac_agent.manual_override(action, **kwargs)
             else:
                 # Direct manual override without AI
@@ -529,7 +531,7 @@ class HVACController:
             }
             
             # Add AI analysis if available
-            if self.use_ai:
+            if self.use_ai and self.hvac_agent:
                 try:
                     ai_status = await self.hvac_agent.get_status_summary()
                     status["ai_analysis"] = ai_status.get("ai_summary", "") if ai_status["success"] else None
@@ -557,7 +559,7 @@ class HVACController:
             raise StateError("HVAC controller is not running")
         
         try:
-            if self.use_ai:
+            if self.use_ai and self.hvac_agent:
                 return await self.hvac_agent.evaluate_efficiency()
             else:
                 # Simple efficiency analysis without AI

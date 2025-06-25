@@ -10,7 +10,7 @@ import structlog
 
 from hag.config.settings import (
     HvacOptions, HassOptions, TemperatureThresholds, 
-    HeatingOptions, CoolingOptions, HvacEntity, DefrostOptions, ActiveHours
+    HeatingOptions, CoolingOptions, HvacEntity, DefrostOptions, ActiveHours, SystemMode
 )
 from hag.hvac.strategies.heating_strategy import HeatingStrategy
 from hag.hvac.state_machine import StateChangeData
@@ -24,7 +24,7 @@ class TestHeatingLogic:
         return HvacOptions(
             temp_sensor="sensor.test_temperature",
             outdoor_sensor="sensor.test_outdoor_temperature",
-            system_mode="heat_only",
+            system_mode=SystemMode.HEAT_ONLY,
             hvac_entities=[
                 HvacEntity(entity_id="climate.test_ac", enabled=True, defrost=True)
             ],
@@ -308,7 +308,7 @@ class TestHeatingLogic:
         mixed_defrost_options = HvacOptions(
             temp_sensor="sensor.test_temperature",
             outdoor_sensor="sensor.test_outdoor_temperature",
-            system_mode="auto",
+            system_mode=SystemMode.AUTO,
             hvac_entities=[
                 HvacEntity(entity_id="climate.ac_with_defrost", enabled=True, defrost=True),
                 HvacEntity(entity_id="climate.ac_no_defrost", enabled=True, defrost=False)
@@ -361,7 +361,7 @@ class TestHeatingLogic:
         )
         
         # Should still enter defrost mode when conditions are met
-        strategy.start_heating()  # Put into heating state first
+        strategy.start_heating()  # type: ignore  # Put into heating state first
         result = strategy.process_state_change(cold_defrost_data)
         assert result == "defrosting"
         assert strategy.current_state.name == "Defrost"
@@ -376,7 +376,7 @@ class TestHeatingLogic:
             preset_options = HvacOptions(
                 temp_sensor="sensor.test_temperature", 
                 outdoor_sensor="sensor.test_outdoor_temperature",
-                system_mode="auto",
+                system_mode=SystemMode.AUTO,
                 hvac_entities=[
                     HvacEntity(entity_id="climate.test_ac", enabled=True, defrost=True)
                 ],

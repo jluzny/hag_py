@@ -23,7 +23,7 @@ class TestHVACStateMachine:
         return HvacOptions(
             temp_sensor="sensor.test_temperature",
             outdoor_sensor="sensor.test_outdoor_temperature",
-            system_mode="auto",
+            system_mode=SystemMode.AUTO,
             hvac_entities=[
                 HvacEntity(entity_id="climate.test_ac", enabled=True, defrost=True)
             ],

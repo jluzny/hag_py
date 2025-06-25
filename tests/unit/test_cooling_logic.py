@@ -23,7 +23,7 @@ class TestCoolingLogic:
         return HvacOptions(
             temp_sensor="sensor.test_temperature",
             outdoor_sensor="sensor.test_outdoor_temperature",
-            system_mode="auto",  # Use auto for comprehensive testing
+            system_mode=SystemMode.AUTO,  # Use auto for comprehensive testing
             hvac_entities=[
                 HvacEntity(entity_id="climate.living_room_ac", enabled=True, defrost=True),
                 HvacEntity(entity_id="climate.bedroom_ac", enabled=True, defrost=False)
