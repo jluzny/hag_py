@@ -13,11 +13,12 @@ from ..state_machine import StateChangeData
 
 logger = structlog.get_logger(__name__)
 
+
 class CoolingStrategy(StateMachine):
     """
     Cooling state machine.
 
-    
+
     """
 
     # States
@@ -44,7 +45,7 @@ class CoolingStrategy(StateMachine):
         """
         Process state change and determine transition.
 
-        
+
         """
 
         current = self.current_state.name
@@ -64,7 +65,6 @@ class CoolingStrategy(StateMachine):
             outdoor_temp=data.weather_temp,
         )
 
-        # Port Rust smlang transition logic exactly
         if current == "CoolingOff":
             if can_operate and is_temp_too_high:
                 self.start_cooling()
@@ -88,7 +88,6 @@ class CoolingStrategy(StateMachine):
         return current.lower()
 
     def _can_operate(self, data: StateChangeData) -> bool:
-        
         cooling_thresholds = self.hvac_options.cooling.temperature_thresholds
 
         # Check outdoor temperature bounds
@@ -135,7 +134,6 @@ class CoolingStrategy(StateMachine):
         )
 
     def _start_or_stay_cooling(self, data: StateChangeData) -> None:
-        
         logger.info(
             "❄️ Starting/staying COOLING",
             indoor_temp=data.current_temp,
@@ -145,7 +143,6 @@ class CoolingStrategy(StateMachine):
         )
 
     def _switch_or_stay_off(self, data: StateChangeData) -> None:
-        
         logger.info(
             "⏸️ Cooling switching/staying OFF",
             indoor_temp=data.current_temp,
@@ -156,7 +153,7 @@ class CoolingStrategy(StateMachine):
         """
         Get HVAC mode for current state.
 
-        
+
         """
         state_map = {"CoolingOff": "off", "Cooling": "cool"}
         return state_map.get(self.current_state.name, "off")
@@ -176,4 +173,3 @@ class CoolingStrategy(StateMachine):
                 "outdoor_max": self.hvac_options.cooling.temperature_thresholds.outdoor_max,
             },
         }
-

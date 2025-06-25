@@ -2,7 +2,7 @@
 # Direct port from Rust configuration with Python-specific enhancements
 
 app_options:
-  log_level: "debug" # debug, info, warning, error
+  log_level: "info" # debug, info, warning, error
   use_ai: false # Enable AI agent for intelligent decisions
   ai_model: "gpt-3.5-turbo" # AI model to use
   ai_temperature: 0.1 # AI model temperature
@@ -10,7 +10,7 @@ app_options:
 hass_options:
   ws_url: "ws://192.168.0.204:8123/api/websocket"
   rest_url: "http://192.168.0.204:8123"
-  token: "override it by env variable HASS_HassOptions__Token"
+  token: "${HASS_HassOptions__Token}"
   max_retries: 5
   retry_delay_ms: 1000
   state_check_interval: 300000

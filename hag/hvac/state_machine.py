@@ -130,15 +130,27 @@ class HVACStateMachine(StateMachine):
         
         Enhanced version using separate state machines.
         """
+        logger.info("🔍 HVAC State Machine: Starting condition evaluation", 
+                   current_state=self.current_state.name,
+                   indoor_temp=self.state_data.current_temp,
+                   outdoor_temp=self.state_data.outdoor_temp,
+                   hour=self.state_data.current_hour,
+                   system_mode=self.state_data.hvac_options.system_mode.value)
+        
         if not self._has_valid_conditions():
-            logger.warning("Cannot evaluate - missing temperature data")
+            logger.warning("❌ HVAC State Machine: Cannot evaluate - missing temperature data")
             return None
         
         # Check if system should be active
         if not self.state_data.should_be_active():
             if self.current_state != self.idle:
-                logger.info("Outside active hours, stopping HVAC")
+                logger.info("⏰ HVAC State Machine: Outside active hours, stopping HVAC",
+                           current_hour=self.state_data.current_hour,
+                           active_start=self.state_data.hvac_options.active_hours.start if self.state_data.hvac_options.active_hours else None,
+                           active_end=self.state_data.hvac_options.active_hours.end if self.state_data.hvac_options.active_hours else None)
                 self._transition_to_idle()
+            else:
+                logger.info("⏰ HVAC State Machine: Outside active hours, staying idle")
             return HVACMode.OFF
         
         # Create state change data for strategies
@@ -151,9 +163,20 @@ class HVACStateMachine(StateMachine):
         
         # Determine target mode based on system configuration
         target_mode = self._determine_target_mode()
+        logger.info("🎯 HVAC State Machine: Target mode determined", 
+                   target_mode=target_mode.value,
+                   reasoning="based on system configuration and conditions")
         
         # Execute transition based on target mode using strategies
-        return self._execute_mode_transition_with_strategies(target_mode, state_change_data)
+        result_mode = self._execute_mode_transition_with_strategies(target_mode, state_change_data)
+        
+        logger.info("✅ HVAC State Machine: Evaluation complete",
+                   final_mode=result_mode.value,
+                   new_state=self.current_state.name,
+                   indoor_temp=self.state_data.current_temp,
+                   outdoor_temp=self.state_data.outdoor_temp)
+        
+        return result_mode
 
     def _has_valid_conditions(self) -> bool:
         """Check if we have valid temperature and time data."""
@@ -171,48 +194,88 @@ class HVACStateMachine(StateMachine):
         indoor_temp = self.state_data.current_temp
         outdoor_temp = self.state_data.outdoor_temp
         
+        logger.info("🧠 HVAC Mode Decision: Analyzing conditions",
+                   system_mode=options.system_mode.value,
+                   indoor_temp=indoor_temp,
+                   outdoor_temp=outdoor_temp)
+        
         # Manual modes
         if options.system_mode in [SystemMode.HEAT_ONLY, SystemMode.COOL_ONLY, SystemMode.OFF]:
+            logger.info("🎮 HVAC Mode Decision: Manual mode selected",
+                       mode=options.system_mode.value,
+                       reason="configured as manual mode")
             return options.system_mode
         
         # Auto mode logic
         heating_thresholds = options.heating.temperature_thresholds
         cooling_thresholds = options.cooling.temperature_thresholds
         
+        logger.info("🤖 HVAC Mode Decision: Auto mode analysis",
+                   heating_thresholds=f"{heating_thresholds.indoor_min}-{heating_thresholds.indoor_max}°C indoor, {heating_thresholds.outdoor_min}-{heating_thresholds.outdoor_max}°C outdoor",
+                   cooling_thresholds=f"{cooling_thresholds.indoor_min}-{cooling_thresholds.indoor_max}°C indoor, {cooling_thresholds.outdoor_min}-{cooling_thresholds.outdoor_max}°C outdoor")
+        
         # Priority 1: Urgent need (very hot/cold)
         if indoor_temp < heating_thresholds.indoor_min:
             if (heating_thresholds.outdoor_min <= outdoor_temp <= heating_thresholds.outdoor_max):
-                logger.debug("Auto mode: Urgent heating needed",
+                logger.info("🔥 HVAC Mode Decision: URGENT HEATING needed",
                            indoor_temp=indoor_temp,
-                           threshold=heating_thresholds.indoor_min)
+                           threshold=heating_thresholds.indoor_min,
+                           outdoor_temp=outdoor_temp,
+                           reason="indoor temperature below minimum heating threshold")
                 return SystemMode.HEAT_ONLY
+            else:
+                logger.info("🚫 HVAC Mode Decision: Heating needed but outdoor conditions prevent it",
+                           indoor_temp=indoor_temp,
+                           outdoor_temp=outdoor_temp,
+                           outdoor_range=f"{heating_thresholds.outdoor_min}-{heating_thresholds.outdoor_max}°C")
         
         if indoor_temp > cooling_thresholds.indoor_max:
             if (cooling_thresholds.outdoor_min <= outdoor_temp <= cooling_thresholds.outdoor_max):
-                logger.debug("Auto mode: Urgent cooling needed",
+                logger.info("❄️ HVAC Mode Decision: URGENT COOLING needed",
                            indoor_temp=indoor_temp,
-                           threshold=cooling_thresholds.indoor_max)
+                           threshold=cooling_thresholds.indoor_max,
+                           outdoor_temp=outdoor_temp,
+                           reason="indoor temperature above maximum cooling threshold")
                 return SystemMode.COOL_ONLY
+            else:
+                logger.info("🚫 HVAC Mode Decision: Cooling needed but outdoor conditions prevent it",
+                           indoor_temp=indoor_temp,
+                           outdoor_temp=outdoor_temp,
+                           outdoor_range=f"{cooling_thresholds.outdoor_min}-{cooling_thresholds.outdoor_max}°C")
         
         # Priority 2: Outdoor temperature guidance
         heating_can_operate = (heating_thresholds.outdoor_min <= outdoor_temp <= heating_thresholds.outdoor_max)
         cooling_can_operate = (cooling_thresholds.outdoor_min <= outdoor_temp <= cooling_thresholds.outdoor_max)
         
+        logger.info("🌡️ HVAC Mode Decision: System capability analysis",
+                   heating_can_operate=heating_can_operate,
+                   cooling_can_operate=cooling_can_operate,
+                   outdoor_temp=outdoor_temp)
+        
         if heating_can_operate and cooling_can_operate:
             # Both can operate - use outdoor temperature to decide
             mid_temp = (heating_thresholds.outdoor_max + cooling_thresholds.outdoor_min) / 2.0
             target = SystemMode.HEAT_ONLY if outdoor_temp <= mid_temp else SystemMode.COOL_ONLY
-            logger.debug("Auto mode: Both systems available",
+            logger.info("⚖️ HVAC Mode Decision: Both systems available, choosing by outdoor temperature",
                         outdoor_temp=outdoor_temp,
                         mid_temp=mid_temp,
-                        selected=target)
+                        selected=target.value,
+                        reason=f"outdoor temp {'<=' if outdoor_temp <= mid_temp else '>'} midpoint")
             return target
         elif heating_can_operate:
+            logger.info("🔥 HVAC Mode Decision: Only heating can operate",
+                       outdoor_temp=outdoor_temp,
+                       reason="outdoor temperature within heating range only")
             return SystemMode.HEAT_ONLY
         elif cooling_can_operate:
+            logger.info("❄️ HVAC Mode Decision: Only cooling can operate",
+                       outdoor_temp=outdoor_temp,
+                       reason="outdoor temperature within cooling range only")
             return SystemMode.COOL_ONLY
         else:
-            logger.debug("Auto mode: No system can operate", outdoor_temp=outdoor_temp)
+            logger.info("🚫 HVAC Mode Decision: No system can operate",
+                       outdoor_temp=outdoor_temp,
+                       reason="outdoor temperature outside both heating and cooling ranges")
             return SystemMode.OFF
 
     def _execute_mode_transition_with_strategies(self, target_mode: SystemMode, 
@@ -222,45 +285,74 @@ class HVACStateMachine(StateMachine):
         
         
         """
+        logger.info("🎯 HVAC Strategy Execution: Processing target mode",
+                   target_mode=target_mode.value,
+                   current_state=self.current_state.name)
         
         if target_mode == SystemMode.HEAT_ONLY:
+            logger.info("🔥 HVAC Strategy: Executing heating strategy",
+                       indoor_temp=data.current_temp,
+                       outdoor_temp=data.weather_temp)
+            
             # Use heating strategy to determine exact action
             strategy_result = self.heating_strategy.process_state_change(data)
+            
+            logger.info("🔥 HVAC Strategy: Heating strategy result",
+                       strategy_result=strategy_result,
+                       current_state=self.current_state.name)
             
             # Map strategy result to main state machine
             if strategy_result == "heating":
                 if self.current_state == self.idle:
+                    logger.info("🔥 HVAC Transition: Idle → Heating")
                     self.start_heating()
                 elif self.current_state == self.cooling:
+                    logger.info("🔥 HVAC Transition: Cooling → Heating")
                     self.switch_to_heating()
                 return HVACMode.HEAT
                 
             elif strategy_result == "defrosting":
                 if self.current_state != self.defrost:
+                    logger.info("🧊 HVAC Transition: Starting defrost cycle",
+                               current_state=self.current_state.name)
                     self.start_defrost()
                 return HVACMode.OFF  # Defrost mode
                 
             else:  # "off"
+                logger.info("⏸️ HVAC Transition: Heating strategy says OFF")
                 self._transition_to_idle()
                 return HVACMode.OFF
                 
         elif target_mode == SystemMode.COOL_ONLY:
+            logger.info("❄️ HVAC Strategy: Executing cooling strategy",
+                       indoor_temp=data.current_temp,
+                       outdoor_temp=data.weather_temp)
+            
             # Use cooling strategy to determine exact action
             strategy_result = self.cooling_strategy.process_state_change(data)
+            
+            logger.info("❄️ HVAC Strategy: Cooling strategy result",
+                       strategy_result=strategy_result,
+                       current_state=self.current_state.name)
             
             # Map strategy result to main state machine
             if strategy_result == "cooling":
                 if self.current_state == self.idle:
+                    logger.info("❄️ HVAC Transition: Idle → Cooling")
                     self.start_cooling()
                 elif self.current_state == self.heating:
+                    logger.info("❄️ HVAC Transition: Heating → Cooling")
                     self.switch_to_cooling()
                 return HVACMode.COOL
                 
             else:  # "cooling_off"
+                logger.info("⏸️ HVAC Transition: Cooling strategy says OFF")
                 self._transition_to_idle()
                 return HVACMode.OFF
                 
         else:  # SystemMode.OFF
+            logger.info("⏸️ HVAC Strategy: Target mode is OFF, transitioning to idle",
+                       current_state=self.current_state.name)
             self._transition_to_idle()
             return HVACMode.OFF
 
@@ -289,11 +381,16 @@ class HVACStateMachine(StateMachine):
     def _transition_to_idle(self) -> None:
         """Transition to idle from any state."""
         if self.current_state == self.heating:
+            logger.info("⏸️ HVAC Transition: Heating → Idle")
             self.stop_heating()
         elif self.current_state == self.cooling:
+            logger.info("⏸️ HVAC Transition: Cooling → Idle")
             self.stop_cooling()
         elif self.current_state == self.defrost:
+            logger.info("⏸️ HVAC Transition: Defrost → Idle")
             self.end_defrost()
+        elif self.current_state == self.idle:
+            logger.debug("⏸️ HVAC Transition: Already idle, no transition needed")
 
     # State event handlers (."""
         temp = self.state_data.hvac_options.heating.temperature
