@@ -4,7 +4,7 @@ LangChain tool for HVAC control operations.
 Enhanced version of Elixir HvacControl action with AI decision support.
 """
 
-from typing import Dict, Any, List, Optional, Type
+from typing import Dict, Any, List, Optional, Type, Union
 from langchain.tools import BaseTool
 from pydantic import BaseModel, Field
 import structlog
@@ -60,7 +60,7 @@ class HVACControlTool(BaseTool):
     
     Use this tool when you need to change HVAC operation or implement AI-driven decisions."""
 
-    args_schema = HVACControlInput
+    args_schema: Union[Type[BaseModel], Dict[str, Any], None] = HVACControlInput
     ha_client: HomeAssistantClient = Field(exclude=True)
     hvac_options: HvacOptions = Field(exclude=True)
     state_machine: HVACStateMachine = Field(exclude=True)

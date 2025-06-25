@@ -4,7 +4,7 @@ LangChain tool for temperature monitoring.
 Enhanced version of Jido Action with LangChain integration.
 """
 
-from typing import Dict, Any, Type
+from typing import Dict, Any, Type, Union
 from langchain.tools import BaseTool
 from pydantic import BaseModel, Field
 import structlog
@@ -42,7 +42,7 @@ class TemperatureMonitorTool(BaseTool):
     
     Use this tool when you need current temperature data or want to trigger HVAC evaluation."""
 
-    args_schema = TemperatureMonitorInput
+    args_schema: Union[Type[BaseModel], Dict[str, Any], None] = TemperatureMonitorInput
     ha_client: HomeAssistantClient = Field(exclude=True)
     state_machine: HVACStateMachine = Field(exclude=True)
 

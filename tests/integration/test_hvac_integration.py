@@ -75,7 +75,7 @@ class TestHVACIntegration:
                         outdoor_max=45.0,
                     ),
                 ),
-                active_hours=ActiveHours(start=8, start_weekday=7, end=21),
+                active_hours=ActiveHours(start=0, start_weekday=0, end=23),
             ),
         }
 
@@ -184,6 +184,7 @@ class TestHVACIntegration:
             hvac_options=hvac_options,
             state_machine=state_machine,
             hvac_agent=mock_agent,
+            use_ai=True,
         )
 
         # Create mock temperature change event
@@ -267,6 +268,7 @@ class TestHVACIntegration:
             hvac_options=hvac_options,
             state_machine=state_machine,
             hvac_agent=mock_agent,
+            use_ai=True,
         )
 
         await controller.start()
@@ -304,6 +306,7 @@ class TestHVACIntegration:
             hvac_options=hvac_options,
             state_machine=state_machine,
             hvac_agent=mock_agent,
+            use_ai=True,
         )
 
         await controller.start()
@@ -342,6 +345,7 @@ class TestHVACIntegration:
             hvac_options=hvac_options,
             state_machine=state_machine,
             hvac_agent=mock_agent,
+            use_ai=True,
         )
 
         await controller.start()
@@ -418,9 +422,9 @@ class TestHVACIntegration:
 
         # Test active hours
         active_hours = hvac_options.active_hours
-        assert active_hours.start == 8
-        assert active_hours.start_weekday == 7
-        assert active_hours.end == 21
+        assert active_hours.start == 0
+        assert active_hours.start_weekday == 0
+        assert active_hours.end == 23
 
     @pytest.mark.asyncio
     async def test_state_machine_integration(self, test_config):
