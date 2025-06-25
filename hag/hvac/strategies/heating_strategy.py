@@ -9,8 +9,8 @@ from typing import Dict, Any, Optional
 from datetime import datetime, timedelta
 import structlog
 
-from ...config.settings import HvacOptions
-from ..state_machine import StateChangeData
+from hag.config.settings import HvacOptions
+from hag.hvac.state_machine import StateChangeData
 
 logger = structlog.get_logger(__name__)
 

@@ -1,6 +1,6 @@
 """Configuration management for HAG."""
 
-from .settings import Settings, HassOptions, HvacOptions
-from .loader import ConfigLoader
+from hag.config.settings import Settings, HassOptions, HvacOptions
+from hag.config.loader import ConfigLoader
 
 __all__ = ["Settings", "HassOptions", "HvacOptions", "ConfigLoader"]

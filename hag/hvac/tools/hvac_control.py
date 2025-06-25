@@ -9,10 +9,10 @@ from langchain.tools import BaseTool
 from pydantic import BaseModel, Field
 import structlog
 
-from ...home_assistant.client import HomeAssistantClient
-from ...home_assistant.models import HassServiceCall
-from ...config.settings import HvacOptions
-from ..state_machine import HVACMode, HVACStateMachine
+from hag.home_assistant.client import HomeAssistantClient
+from hag.home_assistant.models import HassServiceCall
+from hag.config.settings import HvacOptions
+from hag.hvac.state_machine import HVACMode, HVACStateMachine
 
 logger = structlog.get_logger(__name__)
 

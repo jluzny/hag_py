@@ -9,7 +9,7 @@ from langchain.tools import BaseTool
 from pydantic import BaseModel, Field
 import structlog
 
-from ...home_assistant.client import HomeAssistantClient
+from hag.home_assistant.client import HomeAssistantClient
 
 logger = structlog.get_logger(__name__)
 

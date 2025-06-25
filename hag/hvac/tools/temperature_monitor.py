@@ -10,9 +10,9 @@ from pydantic import BaseModel, Field
 import structlog
 from datetime import datetime
 
-from ...home_assistant.client import HomeAssistantClient
-from ...home_assistant.models import HassServiceCall
-from ..state_machine import HVACStateMachine
+from hag.home_assistant.client import HomeAssistantClient
+from hag.home_assistant.models import HassServiceCall
+from hag.hvac.state_machine import HVACStateMachine
 
 logger = structlog.get_logger(__name__)
 

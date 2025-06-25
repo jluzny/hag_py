@@ -7,11 +7,11 @@ from dependency_injector import containers, providers
 from dependency_injector.wiring import Provide, inject
 import structlog
 
-from ..config.settings import Settings
-from ..config.loader import ConfigLoader
-from ..home_assistant.client import HomeAssistantClient
-from ..hvac.state_machine import HVACStateMachine
-from ..hvac.agent import HVACAgent
+from hag.config.settings import Settings
+from hag.config.loader import ConfigLoader
+from hag.home_assistant.client import HomeAssistantClient
+from hag.hvac.state_machine import HVACStateMachine
+from hag.hvac.agent import HVACAgent
 
 logger = structlog.get_logger(__name__)
 

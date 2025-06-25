@@ -9,7 +9,7 @@ import yaml
 from typing import Dict, Any
 from pathlib import Path
 import structlog
-from .settings import Settings
+from hag.config.settings import Settings
 
 logger = structlog.get_logger(__name__)
 

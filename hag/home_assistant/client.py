@@ -10,8 +10,8 @@ from typing import Dict, Any, Optional, Callable, List, Awaitable
 from urllib.parse import urljoin
 import structlog
 
-from ..config.settings import HassOptions
-from .models import HassEvent, HassState, HassServiceCall, WebSocketMessage
+from hag.config.settings import HassOptions
+from hag.home_assistant.models import HassEvent, HassState, HassServiceCall, WebSocketMessage
 
 logger = structlog.get_logger(__name__)
 

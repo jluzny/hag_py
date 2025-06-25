@@ -20,12 +20,13 @@ os.environ.setdefault("LANGCHAIN_ENDPOINT", "")
 os.environ.setdefault("LANGCHAIN_API_KEY", "")
 os.environ.setdefault("LANGSMITH_TRACING", "false")
 
-from .core.container import ApplicationContainer, create_container
-from .core.exceptions import HAGError, ConfigurationError
-from .hvac.controller import HVACController
+from hag.core.container import ApplicationContainer, create_container
+from hag.core.exceptions import HAGError, ConfigurationError
+from hag.hvac.controller import HVACController
 
 # Configure colored logging immediately
-from .core.logging import setup_colored_logging
+from hag.core.logging import setup_colored_logging
+
 setup_colored_logging("info")
 
 logger = structlog.get_logger(__name__)
@@ -88,7 +89,8 @@ class HAGApplication:
                 config_log_level = logging.INFO
 
             # Setup colored logging with config level
-            from .core.logging import setup_colored_logging
+            from hag.core.logging import setup_colored_logging
+
             setup_colored_logging(str(config_log_level))
 
             logger.info("Log level set from config", level=config_log_level)
@@ -140,7 +142,7 @@ class HAGApplication:
             if self.hvac_controller:
                 await self.hvac_controller.start()
 
-            logger.info("✅ HAG HVAC system is running")
+            logger.info("✅ HAG HVAC system is running.")
             logger.info("📊 Use Ctrl+C to stop the system gracefully")
 
             # Wait for shutdown signal
@@ -249,13 +251,14 @@ Examples:
     cli_log_level = None
     if args.log_level != "info":  # "info" is the default
         cli_log_level = getattr(logging, args.log_level.upper())
-        from .core.logging import setup_colored_logging
+        from hag.core.logging import setup_colored_logging
+
         setup_colored_logging(args.log_level)
 
     # Handle config validation
     if args.validate_config:
         try:
-            from .config.loader import ConfigLoader
+            from hag.config.loader import ConfigLoader
 
             config_file = args.config or "config/hvac_config.yaml"
             settings = ConfigLoader.load_settings(config_file)
@@ -321,4 +324,3 @@ async def status_command(
 
 if __name__ == "__main__":
     main()
-

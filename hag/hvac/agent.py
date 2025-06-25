@@ -15,10 +15,10 @@ import structlog
 # Ensure LangSmith telemetry is disabled for privacy
 os.environ.setdefault("LANGCHAIN_TRACING_V2", "false")
 
-from ..home_assistant.client import HomeAssistantClient
-from ..config.settings import HvacOptions
-from .state_machine import HVACStateMachine
-from .tools import TemperatureMonitorTool, HVACControlTool, SensorReaderTool
+from hag.home_assistant.client import HomeAssistantClient
+from hag.config.settings import HvacOptions
+from hag.hvac.state_machine import HVACStateMachine
+from hag.hvac.tools import TemperatureMonitorTool, HVACControlTool, SensorReaderTool
 
 logger = structlog.get_logger(__name__)
 

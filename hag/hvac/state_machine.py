@@ -10,7 +10,7 @@ from enum import Enum
 from dataclasses import dataclass
 import structlog
 
-from ..config.settings import HvacOptions, SystemMode
+from hag.config.settings import HvacOptions, SystemMode
 
 logger = structlog.get_logger(__name__)
 
@@ -104,8 +104,8 @@ class HVACStateMachine(StateMachine):
         self.state_data = HVACState(hvac_options)
         
         # Initialize separate strategies
-        from .strategies.heating_strategy import HeatingStrategy
-        from .strategies.cooling_strategy import CoolingStrategy
+        from hag.hvac.strategies.heating_strategy import HeatingStrategy
+        from hag.hvac.strategies.cooling_strategy import CoolingStrategy
         
         self.heating_strategy = HeatingStrategy(hvac_options)
         self.cooling_strategy = CoolingStrategy(hvac_options)

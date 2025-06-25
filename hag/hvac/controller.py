@@ -7,13 +7,12 @@ import asyncio
 from typing import Dict, Any, Optional, Callable
 import structlog
 
-from ..home_assistant.client import HomeAssistantClient
-from ..home_assistant.models import HassEvent
-from ..config.settings import HvacOptions
-from .state_machine import HVACStateMachine
-from .agent import HVACAgent
-from ..home_assistant.models import HassServiceCall
-from ..core.exceptions import HAGError, StateError
+from hag.home_assistant.client import HomeAssistantClient
+from hag.home_assistant.models import HassEvent, HassServiceCall
+from hag.config.settings import HvacOptions
+from hag.hvac.state_machine import HVACStateMachine
+from hag.hvac.agent import HVACAgent
+from hag.core.exceptions import HAGError, StateError
 
 logger = structlog.get_logger(__name__)
 
@@ -132,7 +131,11 @@ class HVACController:
 
         """
 
-        logger.debug("Received state change event", event_type=event.event_type)
+        logger.debug(
+            "Received state change event",
+            event_type=event.event_type,
+            event_data=str(event),
+        )
 
         if not event.is_state_changed():
             logger.debug("Event is not a state change, ignoring")
