@@ -56,7 +56,7 @@ hvac_options:
     temperature_thresholds:
       indoor_min: 23.0
       indoor_max: 23.5
-      outdoor_min: 32.0
+      outdoor_min: 22.0
       outdoor_max: 45.0
 
   active_hours:

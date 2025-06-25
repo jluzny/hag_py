@@ -15,11 +15,12 @@ from ..hvac.agent import HVACAgent
 
 logger = structlog.get_logger(__name__)
 
+
 class ApplicationContainer(containers.DeclarativeContainer):
     """
     Main dependency injection container for HAG application.
 
-    
+
     """
 
     # Configuration
@@ -63,11 +64,12 @@ class ApplicationContainer(containers.DeclarativeContainer):
         use_ai=settings_from_file.provided.app_options.use_ai,
     )
 
+
 class ContainerBuilder:
     """
     Builder for setting up the application container.
 
-    
+
     """
 
     def __init__(self):
@@ -123,11 +125,10 @@ class ContainerBuilder:
         logger.info("Application container built successfully")
         return self.container
 
+
 def create_container(config_file: str | None = None) -> ApplicationContainer:
     """
     Convenience function to create a configured container.
-
-    
     """
 
     builder = ContainerBuilder()
@@ -135,30 +136,28 @@ def create_container(config_file: str | None = None) -> ApplicationContainer:
     if config_file:
         builder.with_config_file(config_file)
 
-    # Check for environment overrides
-    import os
-
-    llm_model = os.getenv("HAG_LLM_MODEL", "gpt-3.5-turbo")
-    llm_temp = float(os.getenv("HAG_LLM_TEMPERATURE", "0.1"))
-
-    builder.with_llm_model(llm_model).with_llm_temperature(llm_temp)
+    # Use default values (config file controls AI settings now)
+    builder.with_llm_model("gpt-3.5-turbo").with_llm_temperature(0.1)
 
     return builder.build()
+
 
 # Dependency injection decorators for use in other modules
 def inject_ha_client():
     """Inject Home Assistant client."""
     return inject(Provide[ApplicationContainer.ha_client])
 
+
 def inject_hvac_controller():
     """Inject HVAC controller."""
     return inject(Provide[ApplicationContainer.hvac_controller])
+
 
 def inject_hvac_agent():
     """Inject HVAC agent."""
     return inject(Provide[ApplicationContainer.hvac_agent])
 
+
 def inject_settings():
     """Inject application settings."""
     return inject(Provide[ApplicationContainer.settings_from_file])
-
