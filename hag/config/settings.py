@@ -6,7 +6,7 @@ Type-safe configuration structures with Pydantic validation.
 
 from typing import List, Optional
 from enum import Enum
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from pydantic_settings import BaseSettings
 
 class SystemMode(str, Enum):
@@ -25,7 +25,8 @@ class HassOptions(BaseModel):
     retry_delay_ms: int = Field(default=1000, description="Delay between retries in milliseconds")
     state_check_interval: int = Field(default=300000, description="State check interval in milliseconds")
 
-    @validator('ws_url', 'rest_url')
+    @field_validator('ws_url', 'rest_url')
+    @classmethod
     def validate_urls(cls, v):
         """Validate URL format."""
         if not v.startswith(('ws://', 'wss://', 'http://', 'https://')):
@@ -39,7 +40,8 @@ class TemperatureThresholds(BaseModel):
     outdoor_min: float = Field(..., description="Minimum outdoor temperature for operation")
     outdoor_max: float = Field(..., description="Maximum outdoor temperature for operation")
 
-    @validator('indoor_min', 'indoor_max', 'outdoor_min', 'outdoor_max')
+    @field_validator('indoor_min', 'indoor_max', 'outdoor_min', 'outdoor_max')
+    @classmethod
     def validate_temperatures(cls, v):
         """Validate temperature ranges."""
         if v < -50 or v > 60:
@@ -59,7 +61,8 @@ class HeatingOptions(BaseModel):
     temperature_thresholds: TemperatureThresholds
     defrost: Optional[DefrostOptions] = None
 
-    @validator('temperature')
+    @field_validator('temperature')
+    @classmethod
     def validate_heating_temp(cls, v):
         """Validate heating temperature range."""
         if v < 10 or v > 35:
@@ -72,7 +75,8 @@ class CoolingOptions(BaseModel):
     preset_mode: str = Field(default="eco", description="Cooling preset mode")
     temperature_thresholds: TemperatureThresholds
 
-    @validator('temperature')
+    @field_validator('temperature')
+    @classmethod
     def validate_cooling_temp(cls, v):
         """Validate cooling temperature range."""
         if v < 15 or v > 35:
@@ -85,7 +89,8 @@ class ActiveHours(BaseModel):
     start_weekday: int = Field(default=7, description="Weekday start hour")
     end: int = Field(default=22, description="End hour (24h format)")
 
-    @validator('start', 'start_weekday', 'end')
+    @field_validator('start', 'start_weekday', 'end')
+    @classmethod
     def validate_hours(cls, v):
         """Validate hour ranges."""
         if v < 0 or v > 23:
@@ -98,7 +103,8 @@ class HvacEntity(BaseModel):
     enabled: bool = Field(default=True, description="Whether entity is enabled")
     defrost: bool = Field(default=False, description="Whether entity supports defrost")
 
-    @validator('entity_id')
+    @field_validator('entity_id')
+    @classmethod
     def validate_entity_id(cls, v):
         """Validate entity ID format."""
         if '.' not in v or len(v.split('.')) != 2:
@@ -115,7 +121,8 @@ class HvacOptions(BaseModel):
     cooling: CoolingOptions
     active_hours: Optional[ActiveHours] = None
 
-    @validator('temp_sensor', 'outdoor_sensor')
+    @field_validator('temp_sensor', 'outdoor_sensor')
+    @classmethod
     def validate_sensor_ids(cls, v):
         """Validate sensor entity ID format."""
         if '.' not in v or not v.startswith('sensor.'):
@@ -127,22 +134,26 @@ class Settings(BaseSettings):
     hass_options: HassOptions
     hvac_options: HvacOptions
 
-    class Config:
-        env_file = ".env"
-        env_nested_delimiter = "__"
-        case_sensitive = False
-        extra = "allow"  # Allow extra environment variables (e.g. LangSmith telemetry)
+    model_config = ConfigDict(
+        env_file=".env",
+        env_nested_delimiter="__",
+        case_sensitive=False,
+        extra="allow",  # Allow extra environment variables (e.g. LangSmith telemetry)
+    )
         
-        @classmethod
-        def customise_sources(
-            cls,
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls,
+        init_settings,
+        env_settings,
+        dotenv_settings,
+        file_secret_settings,
+    ):
+        """Customize settings sources to prioritize environment variables."""
+        return (
             init_settings,
             env_settings,
+            dotenv_settings,
             file_secret_settings,
-        ):
-            """Customize settings sources to prioritize environment variables."""
-            return (
-                init_settings,
-                env_settings,
-                file_secret_settings,
-            )
+        )
