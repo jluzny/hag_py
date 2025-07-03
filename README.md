@@ -2,6 +2,8 @@
 
 HAG (Home Assistant aGentic automation) Python is an intelligent HVAC automation system that integrates with Home Assistant to provide smart heating, cooling, and climate control using AI-powered decision making.
 
+This is an experimental alpha version migrating from Rust-based Hass HVAC automation to Python to evaluate the latest tools and frameworks in the ecosystem.
+
 ## Features
 
 - **AI-Powered Decision Making**: Uses LangChain for intelligent HVAC control beyond simple rule-based logic

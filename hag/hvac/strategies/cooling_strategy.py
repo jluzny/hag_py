@@ -152,8 +152,6 @@ class CoolingStrategy(StateMachine):
     def get_hvac_mode(self) -> str:
         """
         Get HVAC mode for current state.
-
-
         """
         state_map = {"CoolingOff": "off", "Cooling": "cool"}
         return state_map.get(self.current_state.name, "off")
